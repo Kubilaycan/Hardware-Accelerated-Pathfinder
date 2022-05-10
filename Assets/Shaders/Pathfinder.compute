@@ -1,0 +1,151 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+struct Node{
+    int isObstacle;
+    float3 position;
+
+    int gridX;
+    int gridY;
+
+    int gCost;
+    int hCost;
+    int fCost; // gCost + hCost
+
+    int parentX;
+    int parentY;
+};
+
+RWStructuredBuffer<Node> data;
+
+RWStructuredBuffer<Node> openSet; // length is considered 100
+int openSetCount = 0;
+
+RWStructuredBuffer<Node> closedSet; // length is considered 100
+int closedSetCount = 0;
+
+int gridSizeX;
+int gridSizeY;
+
+RWStructuredBuffer<Node> positionBuffer; // Index0=startNode Index1=endNode
+
+
+void addToOpenSet(Node item){
+    openSet[openSetCount] = item;
+    openSetCount++;
+}
+
+void removeFromOpenSet(Node item){
+    int startShift = 0;
+    for(int i = 0; i < 99; i++){
+        if(openSet[i].gridX == item.gridX && openSet[i].gridY == item.gridY){
+            startShift = 1;
+            openSetCount--;
+        }
+        if(startShift == 1){
+            openSet[i] = openSet[i + 1];
+        }
+    }
+}
+
+void addToClosedSet(Node item){
+    closedSet[closedSetCount] = item;
+    closedSetCount++;
+}
+
+void removeFromClosedSet(Node item){
+    int startShift = 0;
+    for(int i = 0; i < 99; i++){
+        if(closedSet[i].gridX == item.gridX && closedSet[i].gridY == item.gridY){
+            startShift = 1;
+            closedSetCount--;
+        }
+        if(startShift == 1){
+            closedSet[i] = closedSet[i + 1];
+        }
+    }
+}
+
+int isInClosedSet(Node item){
+    int isIn = 0;
+    for(int i = 0; i < 99; i++){
+        if(closedSet[i].gridX == item.gridX && closedSet[i].gridY == item.gridY){
+            isIn = 1;
+        }
+    }
+    return isIn;
+}
+
+int isInOpenSet(Node item){
+    int isIn = 0;
+    for(int i = 0; i < 99; i++){
+        if(openSet[i].gridX == item.gridX && openSet[i].gridY == item.gridY){
+            isIn = 1;
+        }
+    }
+    return isIn;
+}
+
+int getFCost(Node node){
+    return (node.gCost + node.hCost);
+}
+
+int getDistance(Node nodeA, Node nodeB){
+    int distX = abs(nodeA.gridX - nodeB.gridX);
+    int distY = abs(nodeA.gridY - nodeB.gridY);
+    if(distX > distY){
+        return 14 * distY + 10 * (distX - distY);
+    }else{
+        return 14 * distX + 10 * (distY - distX);
+    }
+}
+
+[numthreads(1,1,1)] // Thread number is fixed to 1 due to race condition error
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    addToOpenSet(positionBuffer[0]);
+
+    while(openSetCount > 0){
+        Node currentNode = openSet[0];
+        for(int i = 1; i < openSetCount; i++){
+            if((getFCost(openSet[i]) < getFCost(currentNode)) || (getFCost(openSet[i]) == getFCost(currentNode)) && (openSet[i].hCost < currentNode.hCost)){
+                currentNode = openSet[i];
+            }
+        }
+        removeFromOpenSet(currentNode);
+        addToClosedSet(currentNode);
+
+        if(currentNode.gridX == positionBuffer[1].gridX && currentNode.gridY == positionBuffer[1].gridY){
+            return; // found path
+        }
+
+        for(int x = -1; x <= 1; x++){
+            for(int y = -1; y <= 1; y++){
+                if(x != 0 && y != 0){
+                    int checkX = currentNode.gridX + x;
+                    int checkY = currentNode.gridY + y;
+                    if(checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY){ // Neighbours
+                        if(data[checkX * gridSizeY + checkY].isObstacle == 0 && isInClosedSet(data[checkX * gridSizeY + checkY]) == 0){
+                            int newMovementCostToNeighbour = currentNode.gCost + getDistance(currentNode, data[checkX * gridSizeY + checkY]);
+                            if(newMovementCostToNeighbour < data[checkX * gridSizeY + checkY].gCost || isInOpenSet(data[checkX * gridSizeY + checkY]) == 0){
+                                data[checkX * gridSizeY + checkY].gCost = newMovementCostToNeighbour;
+                                data[checkX * gridSizeY + checkY].hCost = getDistance(data[checkX * gridSizeY + checkY], positionBuffer[1]);
+                                data[checkX * gridSizeY + checkY].parentX = currentNode.gridX;
+                                data[checkX * gridSizeY + checkY].parentY = currentNode.gridY;
+                                if(isInOpenSet(data[checkX * gridSizeY + checkY]) == 0){
+                                    addToOpenSet(data[checkX * gridSizeY + checkY]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+           
+    }
+    // data[3 * gridSizeY + 5].isObstacle = 1;
+    // data[positionBuffer[0].gridX * gridSizeY + positionBuffer[0].gridY].isObstacle = 1;
+    // addToOpenSet(data[3 * gridSizeY + 5]);
+    // addToOpenSet(data[3 * gridSizeY + 6]);
+    // removeFromOpenSet(openSet[0]);
+}
