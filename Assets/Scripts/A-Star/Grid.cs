@@ -5,9 +5,9 @@ using UnityEngine;
 public class Grid : MonoBehaviour
 {
     public LayerMask obstacleMask;
-    public Vector2 gridWorldSize;
+    public int gridWorldSize;
     public float nodeRadius;
-    private Node[,] grid;
+    public Node[,] grid;
 
     private float nodeDiameter;
     private int gridSizeX, gridSizeY;
@@ -19,8 +19,8 @@ public class Grid : MonoBehaviour
 
     private void Start() {
         nodeDiameter = nodeRadius * 2;
-        gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
-        gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
+        gridSizeX = Mathf.RoundToInt(gridWorldSize / nodeDiameter);
+        gridSizeY = Mathf.RoundToInt(gridWorldSize / nodeDiameter);
 
         CreateGrid();
         //SendDataToShader();
@@ -29,7 +29,7 @@ public class Grid : MonoBehaviour
     private void CreateGrid(){
         grid = new Node[gridSizeX, gridSizeY];
         data = new NodeStruct[gridSizeX *gridSizeY];
-        Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x/2 - Vector3.forward * gridWorldSize.y/2;
+        Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize/2 - Vector3.forward * gridWorldSize/2;
 
         for(int x = 0; x < gridSizeX; x++){
             for(int y = 0; y < gridSizeY; y++){
@@ -78,8 +78,8 @@ public class Grid : MonoBehaviour
     }
 
     public Node NodeFromWorldPosition(Vector3 worldPosition){
-        float percentX = (worldPosition.x + gridWorldSize.x/2) / gridWorldSize.x;
-        float percentY = (worldPosition.z + gridWorldSize.y/2) / gridWorldSize.y;
+        float percentX = (worldPosition.x + gridWorldSize/2) / gridWorldSize;
+        float percentY = (worldPosition.z + gridWorldSize/2) / gridWorldSize;
 
         int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
         int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
@@ -90,7 +90,7 @@ public class Grid : MonoBehaviour
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1.0f, gridWorldSize.y));
+        Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize, 1.0f, gridWorldSize));
 
         if(grid != null) {
             foreach(Node node in grid){
@@ -102,7 +102,7 @@ public class Grid : MonoBehaviour
                 if(path != null && path.Contains(node)){
                     Gizmos.color = Color.black;
                 }
-                Gizmos.DrawCube(node.position, Vector3.one * (nodeDiameter * 0.9f));
+                Gizmos.DrawWireCube(node.position, Vector3.one * (nodeDiameter * 0.9f));
             }
         }
     }

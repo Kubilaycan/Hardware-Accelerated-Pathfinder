@@ -9,11 +9,17 @@ public class Pathfinding : MonoBehaviour
     public Transform seeker;
     public Transform target;
 
+    public ComputeShader methodShader;
+    
     private void Awake() {
         grid = GetComponent<Grid>();
     }
 
-    private void Update() {
+    // private void Start() { // Update
+    //     FindPath(seeker.position, target.position);
+    // }
+
+    public void ButtonMethod(){
         FindPath(seeker.position, target.position);
     }
 
@@ -47,10 +53,10 @@ public class Pathfinding : MonoBehaviour
                     continue;
                 }
 
-                int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour);
+                int newMovementCostToNeighbour = currentNode.gCost + GetDistanceWithShader(currentNode, neighbour);
                 if(newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour)){
                     neighbour.gCost = newMovementCostToNeighbour;
-                    neighbour.hCost = GetDistance(neighbour, endNode);
+                    neighbour.hCost = GetDistanceWithShader(neighbour, endNode);
                     neighbour.parent = currentNode;
 
                     if(!openSet.Contains(neighbour)){
@@ -83,5 +89,54 @@ public class Pathfinding : MonoBehaviour
             return 14 * (distY) + 10 * (distX - distY);
         }
         return 14 * (distX) + 10 * (distY - distX);
+    }
+
+    int GetDistanceWithShader(Node nodeA, Node nodeB){
+        NodeStruct nodeStructA = toNodeStruct(nodeA);
+        NodeStruct nodeStructB = toNodeStruct(nodeB);
+
+        methodShader.SetInt("methodEnumValue", (int)MethodEnums.GetDistance);
+
+        NodeStruct[] inputBufferData = new NodeStruct[2];
+        inputBufferData[0] = nodeStructA; inputBufferData[1] = nodeStructB;
+
+        int[] outputBufferData = new int[1];
+
+        ComputeBuffer inputBuffer = new ComputeBuffer(inputBufferData.Length, TotalSize());
+        inputBuffer.SetData(inputBufferData);
+        methodShader.SetBuffer(0, "inputBufer", inputBuffer);
+
+        ComputeBuffer outputBuffer = new ComputeBuffer(outputBufferData.Length, sizeof(int));
+        outputBuffer.SetData(outputBufferData);
+        methodShader.SetBuffer(0, "integerOutputBuffer", outputBuffer);
+
+
+        methodShader.Dispatch(0, inputBufferData.Length, 1, 1);
+        inputBuffer.GetData(inputBufferData);
+        inputBuffer.Dispose();
+        outputBuffer.GetData(outputBufferData);
+        outputBuffer.Dispose();
+
+        return outputBufferData[0];
+    }
+
+    private int TotalSize(){
+        int vector3size = sizeof(float) * 3;
+        int intSize = sizeof(int);
+        int totalSize = intSize + vector3size + (intSize * 7);
+
+        return totalSize;
+    }
+
+    public NodeStruct toNodeStruct(Node node){
+        NodeStruct temp = new NodeStruct();
+        temp.isObstacle = node.isObstacle ? 1 : 0;
+        temp.position = node.position;
+        temp.gridX = node.gridX;
+        temp.gridY = node.gridY;
+        temp.gCost = node.gCost;
+        temp.hCost = node.hCost;
+        temp.fCost = node.fCost;
+        return temp;
     }
 }

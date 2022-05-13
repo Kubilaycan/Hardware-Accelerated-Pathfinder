@@ -69,7 +69,7 @@ public class GridComputeShader : MonoBehaviour
             closedSet[i] = tempNode;
         }
 
-        SendDataToShader();
+        //SendDataToShader();
     }
 
     private void SendDataToShader(){

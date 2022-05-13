@@ -1,13 +1,40 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
+struct Node{
+    int isObstacle;
+    float3 position;
+
+    int gridX;
+    int gridY;
+
+    int gCost;
+    int hCost;
+    int fCost; // gCost + hCost
+
+    int parentX;
+    int parentY;
+};
+
+int methodEnumValue;
+RWStructuredBuffer<Node> inputBufer;
+RWStructuredBuffer<int> integerOutputBuffer;
+
+int GetDistance(Node nodeA, Node nodeB){
+    int distX = abs(nodeA.gridX - nodeB.gridX);
+    int distY = abs(nodeA.gridY - nodeB.gridY);
+
+    if(distX > distY){
+        return 14 * (distY) + 10 * (distX - distY);
+    }
+    return 14 * (distX) + 10 * (distY - distX);
+}
 
 [numthreads(1,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     // TODO: insert actual code here!
-    
+    if(methodEnumValue == 1){
+        integerOutputBuffer[0] = GetDistance(inputBufer[0], inputBufer[1]);
+    }
 }
