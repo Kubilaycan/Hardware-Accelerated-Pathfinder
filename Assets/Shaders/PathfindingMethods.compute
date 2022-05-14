@@ -16,9 +16,11 @@ struct Node{
     int parentY;
 };
 
-int methodEnumValue;
-RWStructuredBuffer<Node> inputBufer;
+RWStructuredBuffer<Node> inputBuffer;
 RWStructuredBuffer<int> integerOutputBuffer;
+
+int isNeighbourInClosedSet;
+int isNeighbourInOpeSet;
 
 int GetDistance(Node nodeA, Node nodeB){
     int distX = abs(nodeA.gridX - nodeB.gridX);
@@ -30,11 +32,27 @@ int GetDistance(Node nodeA, Node nodeB){
     return 14 * (distX) + 10 * (distY - distX);
 }
 
+int OpenSetAddControl(){ // return => -1: continue, 0: don't add open set, 1: add open set
+    // inputBuffer => 0: neighbour, 1: current, 2: endNode
+    if(inputBuffer[0].isObstacle == 1 || isNeighbourInClosedSet == 1){
+        return -1; // continue
+    }
+
+    int newMovementCostToNeighbour = inputBuffer[1].gCost + GetDistance(inputBuffer[1], inputBuffer[0]);
+    if(newMovementCostToNeighbour < inputBuffer[0].gCost || isNeighbourInOpeSet == 0){
+        inputBuffer[0].gCost = newMovementCostToNeighbour;
+        inputBuffer[0].hCost = GetDistance(inputBuffer[0], inputBuffer[2]);
+        inputBuffer[0].parentX = inputBuffer[1].gridX;
+        inputBuffer[0].parentY = inputBuffer[1].gridY;
+        if(isNeighbourInOpeSet == 0){
+            return 1;
+        }
+    }
+    return 0;
+}
+
 [numthreads(1,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
-    if(methodEnumValue == 1){
-        integerOutputBuffer[0] = GetDistance(inputBufer[0], inputBufer[1]);
-    }
+    integerOutputBuffer[0] = OpenSetAddControl();
 }

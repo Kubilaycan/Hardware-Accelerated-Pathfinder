@@ -26,4 +26,6 @@ public class Node
         this.gridX = gridX;
         this.gridY = gridY;
     }
+
+    public Node(){}
 }
