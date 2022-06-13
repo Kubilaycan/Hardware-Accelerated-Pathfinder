@@ -6,29 +6,25 @@ public class Pathfinding : MonoBehaviour
 {
     Grid grid;
 
-    public Transform seeker;
+    public Transform source;
     public Transform target;
 
-    public ComputeShader methodShader;
+    public ComputeShader computeShader;
 
     private void Awake() {
         grid = GetComponent<Grid>();
     }
 
-    // private void Start() { // Update
-    //     FindPath(seeker.position, target.position);
-    // }
-
     public void ButtonMethod(){
-        FindPath(seeker.position, target.position);
+        FindPath(source.position, target.position);
     }
 
     public void ButtonMethodShader(){
-        FindPathViaShader(seeker.position, target.position);
+        FindPathViaShader(source.position, target.position);
     }
 
     public void FindPathWrapper(){
-        FindPath(seeker.position, target.position);
+        FindPath(source.position, target.position);
     }
 
     void FindPath(Vector3 startPos, Vector3 endPos){
@@ -129,17 +125,17 @@ public class Pathfinding : MonoBehaviour
         inputBufferData[2] = toNodeStruct(endNode);
         ComputeBuffer inputBuffer = new ComputeBuffer(inputBufferData.Length, TotalSize());
         inputBuffer.SetData(inputBufferData);
-        methodShader.SetBuffer(0, "inputBuffer", inputBuffer);
+        computeShader.SetBuffer(0, "inputBuffer", inputBuffer);
 
         int[] outputBufferData = new int[1];
         ComputeBuffer outputBuffer = new ComputeBuffer(outputBufferData.Length, sizeof(int));
         outputBuffer.SetData(outputBufferData);
-        methodShader.SetBuffer(0, "integerOutputBuffer", outputBuffer);
+        computeShader.SetBuffer(0, "integerOutputBuffer", outputBuffer);
 
-        methodShader.SetInt("isNeighbourInClosedSet", isNeighbourInClosedSet ? 1 : 0);
-        methodShader.SetInt("isNeighbourInOpeSet",    isNeighbourInOpeSet    ? 1 : 0);
+        computeShader.SetInt("isNeighbourInClosedSet", isNeighbourInClosedSet ? 1 : 0);
+        computeShader.SetInt("isNeighbourInOpeSet",    isNeighbourInOpeSet    ? 1 : 0);
 
-        methodShader.Dispatch(0, inputBufferData.Length, 1, 1);
+        computeShader.Dispatch(0, inputBufferData.Length, 1, 1);
 
         inputBuffer.GetData(inputBufferData);
         inputBuffer.Dispose();

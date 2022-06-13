@@ -32,7 +32,7 @@ int GetDistance(Node nodeA, Node nodeB){
     return 14 * (distX) + 10 * (distY - distX);
 }
 
-int OpenSetAddControl(){ // return => -1: continue, 0: don't add open set, 1: add open set
+int MainFunction(){ // return => -1: continue, 0: don't add open set, 1: add open set
     // inputBuffer => 0: neighbour, 1: current, 2: endNode
     if(inputBuffer[0].isObstacle == 1 || isNeighbourInClosedSet == 1){
         return -1; // continue
@@ -54,5 +54,5 @@ int OpenSetAddControl(){ // return => -1: continue, 0: don't add open set, 1: ad
 [numthreads(1,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    integerOutputBuffer[0] = OpenSetAddControl();
+    integerOutputBuffer[0] = MainFunction();
 }
