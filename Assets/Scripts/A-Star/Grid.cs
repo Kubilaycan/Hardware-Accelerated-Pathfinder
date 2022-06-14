@@ -23,7 +23,6 @@ public class Grid : MonoBehaviour
         gridSizeY = Mathf.RoundToInt(gridWorldSize / nodeDiameter);
 
         CreateGrid();
-        //SendDataToShader();
     }
 
     private void CreateGrid(){
@@ -38,22 +37,6 @@ public class Grid : MonoBehaviour
                 grid[x,y] = new Node(obstacle, worldPoint, x, y);
             }
         }
-    }
-
-    private void SendDataToShader(){
-        int vector3size = sizeof(float) * 3;
-        int totalSize = sizeof(int) + vector3size + (sizeof(int) * 7);
-
-        ComputeBuffer gridBufer = new ComputeBuffer(data.Length, totalSize);
-        gridBufer.SetData(data);
-
-        computeShader.SetBuffer(0, "grid", gridBufer);
-        computeShader.SetFloat("gridSize", data.Length);
-        computeShader.Dispatch(0, data.Length / 10, 1, 1);
-
-        gridBufer.GetData(data);
-        Debug.Log(data[123].isObstacle);
-        gridBufer.Dispose();
     }
 
     public List<Node> GetNeighbours(Node node){
@@ -94,15 +77,21 @@ public class Grid : MonoBehaviour
 
         if(grid != null) {
             foreach(Node node in grid){
+                bool isPath = false;
                 if(node.isObstacle){
                     Gizmos.color = Color.red;
                 }else{
                     Gizmos.color = Color.green;
                 }
                 if(path != null && path.Contains(node)){
-                    Gizmos.color = Color.black;
+                    Gizmos.color = Color.blue;
+                    isPath = true;
                 }
-                Gizmos.DrawWireCube(node.position, Vector3.one * (nodeDiameter * 0.9f));
+                if(isPath){
+                    Gizmos.DrawCube(node.position, Vector3.one * (nodeDiameter * 0.9f));    
+                }else{
+                    Gizmos.DrawWireCube(node.position, Vector3.one * (nodeDiameter * 0.9f));
+                }
             }
         }
     }

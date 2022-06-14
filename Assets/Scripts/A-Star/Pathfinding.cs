@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Pathfinding : MonoBehaviour
 {
@@ -8,6 +9,12 @@ public class Pathfinding : MonoBehaviour
 
     public Transform source;
     public Transform target;
+    
+    private float shaderCalculationTime = 0;
+    private float cpuCalculationTime = 0;
+
+    public Text cpuText;
+    public Text gpuText;
 
     public ComputeShader computeShader;
 
@@ -16,15 +23,16 @@ public class Pathfinding : MonoBehaviour
     }
 
     public void ButtonMethod(){
+        shaderCalculationTime = 0;
+        cpuCalculationTime = 0;
         FindPath(source.position, target.position);
-    }
-
-    public void ButtonMethodShader(){
         FindPathViaShader(source.position, target.position);
+        SetTexts();
     }
 
-    public void FindPathWrapper(){
-        FindPath(source.position, target.position);
+    private void SetTexts(){
+        cpuText.text = cpuCalculationTime + "ms";
+        gpuText.text = shaderCalculationTime + "ms";
     }
 
     void FindPath(Vector3 startPos, Vector3 endPos){
@@ -36,6 +44,7 @@ public class Pathfinding : MonoBehaviour
         openSet.Add(startNode);
 
         while(openSet.Count > 0){
+            var t1 = Time.realtimeSinceStartup;
             Node currentNode = openSet[0];
 
             for(int i = 1; i < openSet.Count; i++){
@@ -70,6 +79,8 @@ public class Pathfinding : MonoBehaviour
                     }
                 }
             }
+            var t2 = Time.realtimeSinceStartup;
+            cpuCalculationTime += (t2 - t1);
         }
     }
 
@@ -134,9 +145,10 @@ public class Pathfinding : MonoBehaviour
 
         computeShader.SetInt("isNeighbourInClosedSet", isNeighbourInClosedSet ? 1 : 0);
         computeShader.SetInt("isNeighbourInOpeSet",    isNeighbourInOpeSet    ? 1 : 0);
-
+        var t1 = Time.realtimeSinceStartup;
         computeShader.Dispatch(0, inputBufferData.Length, 1, 1);
-
+        var t2 = Time.realtimeSinceStartup;
+        shaderCalculationTime += (t2 - t1);
         inputBuffer.GetData(inputBufferData);
         inputBuffer.Dispose();
 
