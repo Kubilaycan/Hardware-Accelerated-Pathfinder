@@ -10,8 +10,8 @@ public class Node
     public int gridX;
     public int gridY;
 
-    public int gCost;
-    public int hCost;
+    public int gCost; // distance from start
+    public int hCost; // distance to end
     public int fCost{
         get{
             return gCost + hCost;
