@@ -2094,10 +2094,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   obstacleMask:
-    serializedVersion: 2
     m_Bits: 1024
   gridWorldSize: 50
   nodeRadius: 0.75
+  nodeDiameter: 0
+  gridSizeX: 0
+  gridSizeY: 0
   computeShader: {fileID: 7200000, guid: 6c0c9006b6ceb0d42a15b11e4e33bae1, type: 3}
   startPos: {fileID: 0}
   endPos: {fileID: 1067830791}
@@ -3531,12 +3533,12 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1799190269}
+  m_Father: {fileID: 1211153855}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 152.6, y: 26.09999}
+  m_AnchoredPosition: {x: 152.6, y: 0.000015258789}
   m_SizeDelta: {x: 250, y: 24}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &755944709
@@ -6241,7 +6243,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 1888285990}
+  - {fileID: 752793336}
   m_Father: {fileID: 830133273}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -7520,8 +7522,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   source: {fileID: 7244705655663079831}
   target: {fileID: 1067830791}
-  cpuText: {fileID: 1888285992}
-  gpuText: {fileID: 752793334}
+  cpuText: {fileID: 752793334}
+  gpuText: {fileID: 1888285992}
   computeShader: {fileID: 7200000, guid: 7fe85a04f26b3f64f980a92ca5f370f0, type: 3}
 --- !u!1001 &1409137020
 PrefabInstance:
@@ -9164,7 +9166,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 752793336}
+  - {fileID: 1888285990}
   m_Father: {fileID: 830133273}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -9670,12 +9672,12 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1211153855}
+  m_Father: {fileID: 1799190269}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 152.6, y: -26.09996}
+  m_AnchoredPosition: {x: 152.60004, y: 0.000015258789}
   m_SizeDelta: {x: 250, y: 24}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1888285991
